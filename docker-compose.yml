@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    environment:
+      POSTGRES_DB: login
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5075:5432"
+    networks:
+      - login-net
+
+  backend:
+    build: ./Backend
+    container_name: Backend
+    ports:
+      - "3075:3075"
+    depends_on:
+      - postgres
+    networks:
+      - login-net
+
+  forgot:
+    build: ./Forgot
+    container_name: Forgot
+    ports:
+      - "8136:80"
+    depends_on:
+      - backend
+    networks:
+      - login-net
+
+  login:
+    build: ./Login
+    container_name: Login
+    ports:
+      - "8137:80"
+    depends_on:
+      - backend
+    networks:
+      - login-net
+
+  sign_up:
+    build: ./Sign_Up
+    container_name: Sign_Up
+    ports:
+      - "8138:80"
+    depends_on:
+      - backend
+    networks:
+      - login-net
+
+volumes:
+  pgdata:
+
+networks:
+  login-net:
+    driver: bridge
+
